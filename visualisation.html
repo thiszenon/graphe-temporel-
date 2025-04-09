@@ -1,0 +1,132 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Visualisation Interactive </title>
+        <style>
+               #timeline-container {
+            width: 800px;
+            margin: 0 auto;
+            font-family: Arial, sans-serif;
+        }
+        #slider-container {
+            position: relative;
+            height: 80px;
+            margin: 40px 0;
+        }
+        #date-slider {
+            width: 100%;
+        }
+        #current-date {
+            text-align: center;
+            font-size: 1.5em;
+            margin: 10px 0;
+        }
+        #image-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 15px;
+            border: 2px solid #3498db;
+            border-radius: 8px;
+            min-height: 120px;
+            justify-content: center;
+        }
+        .image-card {
+            border: 1px solid #ddd;
+            padding: 8px;
+            border-radius: 4px;
+            text-align: center;
+            background: #f9f9f9;
+        }
+        .image-preview {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            background: #eee;
+            display: block;
+        }
+        .empty-message {
+            color: #888;
+            font-style: italic;
+            align-self: center;
+        }
+        #timeline-track {
+            position: absolute;
+            bottom: 30px;
+            width: 100%;
+            height: 4px;
+            background: #ddd;
+            z-index: -1;
+        }
+            
+        </style>
+    </head>
+
+    <body>
+        <div id="timeline-container">
+            <h1>Timeline d'Interaction </h1>
+
+            <div id="slider-container">
+                <div id="timeline-track"></div>
+                <input type="range" id="date-slider" min="0" max="100" value="0">
+            </div>
+            
+            <div id="current-date">07/2025</div>
+            <div id="image-container">
+                <div class="empty-message">Déplacez le curseur</div>
+            </div>
+        </div>
+
+        <script>
+            //Chargement des données JSON
+            fetch('timeline_data.json')
+                .then(response => response.json())
+                .then(data => {
+                    //préparation des dates
+                    const dates = [] ;
+                    for(let year = 2020; year <= 2023; year ++){
+                        for(let month = 1; month <= 12; month++){
+                            dates.push(`${month.toString().padStart(2, '0')}/${year}`);
+                        }
+                    }
+
+                    const slider = document.getElementById('date-slider');
+                    const dateDisplay = document.getElementById('current-date');
+                    const imageContainer = document.getElementById('image-container');
+
+                    // Configuration du slider
+                    slider.max = dates.length -1;
+
+                    slider.addEventListener('input', () => {
+                        const date = dates[slider.value];
+                        dateDisplay.textContent = date;
+
+                        //Affichage des images
+                        imageContainer.innerHTML= '';
+                        if(data[date] && data[date].length > 0){
+                            data[date].forEach(img => {
+                                const card = document.createElement('div');
+                                card.className = 'image-card';
+                                card.innerHTML = `
+                                    <img src="placeholder.jpg" alt="${img}" class = "image-preview" >
+                                    <div>${img} </div>
+                                `;
+                                imageContainer.appendChild(card);
+                            });
+                        } else{
+                            imageContainer.innerHTML = '<div class="empty-message"> Aucune image pour cette date </div>';
+
+                        }
+                    });
+
+                    //Initialisation 
+                    slider.dispatchEvent(new Event('input'));
+                })
+                .catch(error => {
+                    console.error("Erreur de chargement des données:" , error);
+                    document.getElementById('image-container').innerHTML = '<div class="error"> Erreur de chargement des données</div>';
+                });
+        </script>
+    </body>
+</html>
